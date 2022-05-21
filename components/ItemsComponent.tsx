@@ -14,38 +14,42 @@ import {
   CardContent,
   FormControl,
   InputLabel,
-  Link
+  Link,
+  Paper,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import axios from 'axios';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import TelegramIcon from '@mui/icons-material/Telegram';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import PublicIcon from '@mui/icons-material/Public';
-
+import TwitterIcon from "@mui/icons-material/Twitter";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import TelegramIcon from "@mui/icons-material/Telegram";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import PublicIcon from "@mui/icons-material/Public";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 const validationSchema = Yup.object().shape({
- link: Yup.string()
-        .matches(
-            /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
-            'لینک اشتباه است.'
-        )
-        .required('لینک اجباری است.')
+  link: Yup.string()
+    .matches(
+      /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
+      "لینک اشتباه است."
+    )
+    .required("لینک اجباری است."),
 });
 
-
-export default function ItemsComponent({itemData, getItemType}) {
-
-	const {type, link} = itemData;
+export default function ItemsComponent({
+  itemData,
+  getItemType,
+  getItemUpdateValues,
+}) {
+  const { type, link } = itemData;
 
   const [typeText, setTypeText] = useState(type as string);
 
   const [openAddForm, setOpenAddForm] = useState(false);
-  const handleOpenAddForm = () => setOpenAddForm(prevState => !prevState);
+
+  const handleOpenAddForm = () => setOpenAddForm((prevState) => !prevState);
   const handleCloseAddForm = () => setOpenAddForm(false);
 
   const formik = useFormik({
@@ -54,56 +58,41 @@ export default function ItemsComponent({itemData, getItemType}) {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-
-      try {
-        const {data, status} = await axios({
-          method: "post",
-          url: "http://localhost:3000/api/postItem",
-          data: {
-            type,
-            link: values.link
-          }
-        });
-
-        if (data.isSuccess === true && status === 200) {
-          console.log('Submitted');
-        }
-
-      } catch {
-        console.log('Error');
-      }
-
-    }
+      getItemUpdateValues({
+        type: typeText,
+        link: values.link,
+        prevType: type,
+      });
+    },
   });
 
   const typeIconChecker = () => {
-  	switch(type) {
-  		case "توییتر":
-  			return <TwitterIcon />;
-  		case "اینستاگرام":
-  			return <InstagramIcon />;
-  		case "فیسبوک":
-  			return <FacebookIcon />;
-  		case "تلگرام":
-  			return <TelegramIcon />;
-  		case "لینکدین":
-  			return <LinkedInIcon />;
-  		case "وبسایت":
-  			return <PublicIcon />;
-  	}
-  }
+    switch (type) {
+      case "توییتر":
+        return <TwitterIcon />;
+      case "اینستاگرام":
+        return <InstagramIcon />;
+      case "فیسبوک":
+        return <FacebookIcon />;
+      case "تلگرام":
+        return <TelegramIcon />;
+      case "لینکدین":
+        return <LinkedInIcon />;
+      case "وبسایت":
+        return <PublicIcon />;
+    }
+  };
 
-	return (
-    <Box
+  return (
+    <Paper
+      elevation={0}
       sx={{
-        backgroundColor: "rgba(244, 246, 248)",
-        borderRadius: 1,
+        borderRadius: 4,
         display: "flex",
         flexDirection: "column",
-        my: 2
+        my: 2,
       }}
     >
-
       <Box
         sx={{
           display: "flex",
@@ -111,33 +100,54 @@ export default function ItemsComponent({itemData, getItemType}) {
           justifyContent: "space-between",
           alignItems: "center",
           gap: 1,
-          p: 2
+          p: 2,
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 1 }}>
-        	<Box sx={{
-					    display: 'flex',
-					    alignItems: 'center',
-					    flexWrap: 'wrap',
-					    gap: 1
-					}}>
-						{typeIconChecker()}
-	          <Typography variant="body1" display="inline-block">
-	            {type}
-	          </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 1,
+            }}
+          >
+            {typeIconChecker()}
+            <Typography variant="body1" display="inline-block">
+              {type}
+            </Typography>
           </Box>
 
           <Typography variant="caption" display="inline-block">
             لینک:
           </Typography>
-					<Link href={link} target="blank">
-						{link}
-					</Link>
+          <Link href={link} target="blank">
+            {link}
+          </Link>
         </Box>
 
         <Box>
-          <Button disabled={openAddForm} variant="text" onClick={handleOpenAddForm}>ویرایش</Button>
-          <Button variant="text" onClick={() => getItemType(type)}>
+          <Button
+            disabled={openAddForm}
+            variant="text"
+            onClick={handleOpenAddForm}
+            startIcon={<EditIcon />}
+          >
+            ویرایش
+          </Button>
+          <Button
+            variant="text"
+            onClick={() => getItemType(type)}
+            color="error"
+            startIcon={<DeleteIcon />}
+          >
             حذف
           </Button>
         </Box>
@@ -146,36 +156,94 @@ export default function ItemsComponent({itemData, getItemType}) {
       {/* Collapse */}
 
       <Collapse in={openAddForm}>
-        <Card
-          sx={{ backgroundColor: "rgba(244, 246, 248)", p: 2 }}
-          elevation={0}
-        >
+        <Card sx={{ p: 2 }} elevation={0}>
           <form onSubmit={formik.handleSubmit}>
             <CardContent>
-              <Typography variant="body2" display="block" sx={{mb: 2}}>
+              <Typography variant="body2" display="block" sx={{ mb: 2 }}>
                 ویرایش مسیر ارتباطی {typeText}
               </Typography>
-              
+
               <Grid container spacing={2}>
                 <Grid item xs={4}>
-                <FormControl fullWidth>
-                  <InputLabel id="type-select-label">نوع</InputLabel>
-                  <Select
-                    labelId="type-select-label"
-                    id="type-select"
-                    value={typeText}
-                    label="نوع"
-                    onChange={(event: SelectChangeEvent) =>
-                      setTypeText(event.target.value as string)
-                    }
-                  >
-                    <MenuItem sx={{justifyContent: "flex-end"}} value={"توییتر"}>توییتر</MenuItem>
-                    <MenuItem sx={{justifyContent: "flex-end"}} value={"اینستاگرام"}>اینستاگرام</MenuItem>
-                    <MenuItem sx={{justifyContent: "flex-end"}} value={"فیسبوک"}>فیسبوک</MenuItem>
-                    <MenuItem sx={{justifyContent: "flex-end"}} value={"تلگرام"}>تلگرام</MenuItem>
-                    <MenuItem sx={{justifyContent: "flex-end"}} value={"لینکدین"}>لینکدین</MenuItem>
-                    <MenuItem sx={{justifyContent: "flex-end"}} value={"وبسایت"}>وبسایت</MenuItem>
-                  </Select>
+                  <FormControl fullWidth>
+                    <InputLabel id="type-select-label">نوع</InputLabel>
+                    <Select
+                      labelId="type-select-label"
+                      id="type-select"
+                      value={typeText}
+                      label="نوع"
+                      onChange={(event: SelectChangeEvent) =>
+                        setTypeText(event.target.value as string)
+                      }
+                    >
+                      <MenuItem
+                        value={"توییتر"}
+                        sx={{ justifyContent: "flex-end" }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <span>توییتر</span>
+                          <TwitterIcon />
+                        </Box>
+                      </MenuItem>
+
+                      <MenuItem
+                        value={"اینستاگرام"}
+                        sx={{ justifyContent: "flex-end" }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <span>اینستاگرام</span>
+                          <InstagramIcon />
+                        </Box>
+                      </MenuItem>
+                      <MenuItem
+                        value={"فیسبوک"}
+                        sx={{ justifyContent: "flex-end" }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <span>فیسبوک</span>
+                          <FacebookIcon />
+                        </Box>
+                      </MenuItem>
+                      <MenuItem
+                        value={"تلگرام"}
+                        sx={{ justifyContent: "flex-end" }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <span>تلگرام</span>
+                          <TelegramIcon />
+                        </Box>
+                      </MenuItem>
+                      <MenuItem
+                        value={"لینکدین"}
+                        sx={{ justifyContent: "flex-end" }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <span>لینکدین</span>
+                          <LinkedInIcon />
+                        </Box>
+                      </MenuItem>
+                      <MenuItem
+                        value={"وبسایت"}
+                        sx={{ justifyContent: "flex-end" }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <span>وبسایت</span>
+                          <PublicIcon />
+                        </Box>
+                      </MenuItem>
+                    </Select>
                   </FormControl>
                 </Grid>
                 <Grid item xs={8}>
@@ -184,7 +252,7 @@ export default function ItemsComponent({itemData, getItemType}) {
                     id="link"
                     name="link"
                     label="لینک"
-                    sx={{input: {textAlign: "right"}}}
+                    sx={{ input: { textAlign: "right" } }}
                     value={formik.values.link}
                     onChange={formik.handleChange}
                     error={formik.touched.link && Boolean(formik.errors.link)}
@@ -193,21 +261,36 @@ export default function ItemsComponent({itemData, getItemType}) {
                 </Grid>
               </Grid>
             </CardContent>
-            <CardActions sx={{ display: "flex", flexDirection: "row", justifyContent: "flex-end" }}>
-              <Button type="reset" size="small" variant="outlined" onClick={() => {
-                formik.resetForm();
-                handleCloseAddForm();
-              }}>
+            <CardActions
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                type="reset"
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  formik.resetForm();
+                  handleCloseAddForm();
+                }}
+              >
                 انصراف
               </Button>
-              <Button size="small" variant="contained" type="submit">
-                ویرایش مسیر ارتباطی
+              <Button
+                size="small"
+                variant="contained"
+                type="submit"
+                disabled={link === formik.values.link && type === typeText}
+              >
+                ویرایش مسیر ارتباطی {typeText}
               </Button>
             </CardActions>
           </form>
         </Card>
       </Collapse>
-
-    </Box>
-	);
+    </Paper>
+  );
 }
