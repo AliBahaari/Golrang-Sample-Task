@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Typography,
   Button,
@@ -28,6 +28,7 @@ import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import PublicIcon from "@mui/icons-material/Public";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { ThemeContext } from "../pages";
 
 const validationSchema = Yup.object().shape({
   link: Yup.string()
@@ -43,10 +44,11 @@ export default function ItemsComponent({
   getItemType,
   getItemUpdateValues,
 }) {
+  const darkMode = useContext(ThemeContext);
+
   const { type, link } = itemData;
 
   const [typeText, setTypeText] = useState(type as string);
-
   const [openAddForm, setOpenAddForm] = useState(false);
 
   const handleOpenAddForm = () => setOpenAddForm((prevState) => !prevState);
@@ -91,6 +93,8 @@ export default function ItemsComponent({
         display: "flex",
         flexDirection: "column",
         my: 2,
+        p: 2,
+        backgroundColor: `${darkMode && "rgb(52, 61, 72)"}`,
       }}
     >
       <Box
@@ -100,7 +104,6 @@ export default function ItemsComponent({
           justifyContent: "space-between",
           alignItems: "center",
           gap: 1,
-          p: 2,
         }}
       >
         <Box
@@ -156,7 +159,18 @@ export default function ItemsComponent({
       {/* Collapse */}
 
       <Collapse in={openAddForm}>
-        <Card sx={{ p: 2 }} elevation={0}>
+        <Card
+          sx={{
+            mt: `${darkMode && "16px"}`,
+            p: 2,
+            backgroundColor: `${darkMode && "rgb(52, 61, 72)"}`,
+            backgroundImage: `${
+              darkMode &&
+              "linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))"
+            }`,
+          }}
+          elevation={0}
+        >
           <form onSubmit={formik.handleSubmit}>
             <CardContent>
               <Typography variant="body2" display="block" sx={{ mb: 2 }}>
