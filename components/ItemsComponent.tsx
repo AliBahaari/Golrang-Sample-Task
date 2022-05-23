@@ -15,6 +15,7 @@ import {
   FormControl,
   InputLabel,
   Link,
+  IconButton,
   Paper,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
@@ -29,9 +30,11 @@ import PublicIcon from "@mui/icons-material/Public";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { ThemeContext } from "../pages";
+import { useTranslations } from 'next-intl';
+import {useRouter} from 'next/router';
 
 const validationSchema = Yup.object().shape({
-  link: Yup.string()
+  itemLink: Yup.string()
     .matches(
       /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
       "لینک اشتباه است."
@@ -41,34 +44,37 @@ const validationSchema = Yup.object().shape({
 
 export default function ItemsComponent({
   itemData,
-  getItemType,
-  getItemUpdateValues,
+  handleGetItemType,
+  handleGetItemUpdateValues,
 }) {
+  const t = useTranslations('General');
+  const router = useRouter();
+
   const darkMode = useContext(ThemeContext);
 
   const { type, link } = itemData;
 
-  const [typeText, setTypeText] = useState(type as string);
-  const [openAddForm, setOpenAddForm] = useState(false);
+  const [itemType, setItemType] = useState(type as string);
+  const [openEditForm, setOpenEditForm] = useState(false);
 
-  const handleOpenAddForm = () => setOpenAddForm((prevState) => !prevState);
-  const handleCloseAddForm = () => setOpenAddForm(false);
+  const handleOpenEditForm = (): void => setOpenEditForm((prevState) => !prevState);
+  const handleCloseEditForm = (): void => setOpenEditForm(false);
 
   const formik = useFormik({
     initialValues: {
-      link,
+      itemLink: link,
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      getItemUpdateValues({
-        type: typeText,
-        link: values.link,
+      handleGetItemUpdateValues({
+        type: itemType,
+        link: values.itemLink,
         prevType: type,
       });
     },
   });
 
-  const typeIconChecker = () => {
+  const handleTypeIcon = () => {
     switch (type) {
       case "توییتر":
         return <TwitterIcon />;
@@ -84,6 +90,32 @@ export default function ItemsComponent({
         return <PublicIcon />;
     }
   };
+
+  const handleTypeTranslation = (type): string => {
+    switch (type) {
+      case "توییتر":
+        return "Twitter";
+      case "اینستاگرام":
+        return "Instagram";
+      case "فیسبوک":
+        return "Facebook";
+      case "تلگرام":
+        return "Telegram";
+      case "لینکدین":
+        return "LinkedIn";
+      case "وبسایت":
+        return "Website";
+    }
+  };  
+
+  const handleHelperTranslation = (text): string => {
+    switch (text) {
+      case "لینک اشتباه است.":
+        return "Wrong URL address.";
+      case "لینک اجباری است.":
+        return "The URL address is required.";
+    }
+  }  
 
   return (
     <Paper
@@ -109,8 +141,8 @@ export default function ItemsComponent({
         <Box
           sx={{
             display: "flex",
-            flexDirection: "row",
             alignItems: "center",
+            flexDirection: {xs: "column", sm: "row"},
             gap: 1,
           }}
         >
@@ -122,47 +154,89 @@ export default function ItemsComponent({
               gap: 1,
             }}
           >
-            {typeIconChecker()}
+            {handleTypeIcon()}
             <Typography variant="body1" display="inline-block">
-              {type}
+              {router.locale === "en" ? handleTypeTranslation(type) : type}
             </Typography>
           </Box>
 
-          <Typography variant="caption" display="inline-block">
-            لینک:
-          </Typography>
-          <Link href={link} target="blank">
-            {link}
-          </Link>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: 1,
+            }}
+          >
+            <Typography variant="caption" display="inline-block">
+              {t('LINK_TEXT')}
+              {":"}
+            </Typography>
+            <Link href={link} target="blank">
+              {link}
+            </Link>
+          </Box>
         </Box>
 
-        <Box>
-          <Button
-            disabled={openAddForm}
-            variant="text"
-            onClick={handleOpenAddForm}
-            startIcon={<EditIcon />}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            flexDirection: {xs: "column", sm: "row"},
+            gap: 1,
+          }}
+        >
+          <IconButton
+            color="primary"
+            onClick={handleOpenEditForm}
+            sx={{ p: "10px", display: {sm: "none"} }}
+            aria-label="edit"
           >
-            ویرایش
+            <EditIcon />
+          </IconButton> 
+          <IconButton
+            color="error"
+            onClick={() => handleGetItemType(type)}
+            sx={{ p: "10px", display: {sm: "none"} }}
+            aria-label="delete"
+          >
+            <DeleteIcon />
+          </IconButton>           
+
+          <Button
+            disabled={openEditForm}
+            variant="text"
+            onClick={handleOpenEditForm}
+            startIcon={<EditIcon />}
+            sx={{
+              display: {xs: "none", sm: "flex"}
+            }}
+          >
+            {t('EDIT')}
           </Button>
           <Button
             variant="text"
-            onClick={() => getItemType(type)}
+            onClick={() => handleGetItemType(type)}
             color="error"
             startIcon={<DeleteIcon />}
+            sx={{
+              display: {xs: "none", sm: "flex"}
+            }}            
           >
-            حذف
+            {t('DELETE')}
           </Button>
         </Box>
       </Box>
 
       {/* Collapse */}
 
-      <Collapse in={openAddForm}>
+      <Collapse in={openEditForm}>
         <Card
           sx={{
-            mt: `${darkMode && "16px"}`,
             p: 2,
+            borderRadius: 4,
             backgroundColor: `${darkMode && "rgb(52, 61, 72)"}`,
             backgroundImage: `${
               darkMode &&
@@ -174,103 +248,174 @@ export default function ItemsComponent({
           <form onSubmit={formik.handleSubmit}>
             <CardContent>
               <Typography variant="body2" display="block" sx={{ mb: 2 }}>
-                ویرایش مسیر ارتباطی {typeText}
+                {t('ADD_SOCIAL_TYPE')}
+                {" "}
+                {router.locale === "en" ? handleTypeTranslation(itemType) : itemType}
               </Typography>
 
               <Grid container spacing={2}>
-                <Grid item xs={4}>
+                <Grid item xs={12} sm={4}>
                   <FormControl fullWidth>
-                    <InputLabel id="type-select-label">نوع</InputLabel>
+                    <InputLabel id="item-type-select-label">
+                      {t('TYPE_TEXT')}
+                    </InputLabel>
                     <Select
-                      labelId="type-select-label"
-                      id="type-select"
-                      value={typeText}
+                      labelId="item-type-select-label"
+                      id="item-type-select"
+                      value={itemType}
+                      sx={{ display: "flex", flexDirection: "row" }}
                       label="نوع"
                       onChange={(event: SelectChangeEvent) =>
-                        setTypeText(event.target.value as string)
+                        setItemType(event.target.value as string)
                       }
                     >
                       <MenuItem
                         value={"توییتر"}
-                        sx={{ justifyContent: "flex-end" }}
+                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
                       >
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 2 }}
                         >
-                          <span>توییتر</span>
-                          <TwitterIcon />
+                          {
+                            router.locale === "en" ? (
+                              <>
+                                <TwitterIcon />
+                                <span>Twitter</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>توییتر</span>
+                                <TwitterIcon />
+                              </>
+                            )
+                          }
                         </Box>
                       </MenuItem>
 
                       <MenuItem
                         value={"اینستاگرام"}
-                        sx={{ justifyContent: "flex-end" }}
+                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
                       >
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 2 }}
                         >
-                          <span>اینستاگرام</span>
-                          <InstagramIcon />
+                          {
+                            router.locale === "en" ? (
+                              <>
+                                <InstagramIcon />
+                                <span>Instagram</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>اینستاگرام</span>
+                                <InstagramIcon />
+                              </>
+                            )
+                          }                        
                         </Box>
                       </MenuItem>
                       <MenuItem
                         value={"فیسبوک"}
-                        sx={{ justifyContent: "flex-end" }}
+                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
                       >
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 2 }}
                         >
-                          <span>فیسبوک</span>
-                          <FacebookIcon />
+                          {
+                            router.locale === "en" ? (
+                              <>
+                                <FacebookIcon />
+                                <span>Facebook</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>فیسبوک</span>
+                                <FacebookIcon />
+                              </>
+                            )
+                          }                            
                         </Box>
                       </MenuItem>
                       <MenuItem
                         value={"تلگرام"}
-                        sx={{ justifyContent: "flex-end" }}
+                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
                       >
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 2 }}
                         >
-                          <span>تلگرام</span>
-                          <TelegramIcon />
+                          {
+                            router.locale === "en" ? (
+                              <>
+                                <TelegramIcon />
+                                <span>Telegram</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>تلگرام</span>
+                                <TelegramIcon />
+                              </>
+                            )
+                          }                            
                         </Box>
                       </MenuItem>
                       <MenuItem
                         value={"لینکدین"}
-                        sx={{ justifyContent: "flex-end" }}
+                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
                       >
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 2 }}
                         >
-                          <span>لینکدین</span>
-                          <LinkedInIcon />
+                          {
+                            router.locale === "en" ? (
+                              <>
+                                <LinkedInIcon />
+                                <span>LinkedIn</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>لینکدین</span>
+                                <LinkedInIcon />
+                              </>
+                            )
+                          }                            
                         </Box>
                       </MenuItem>
                       <MenuItem
                         value={"وبسایت"}
-                        sx={{ justifyContent: "flex-end" }}
+                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
                       >
                         <Box
                           sx={{ display: "flex", alignItems: "center", gap: 2 }}
                         >
-                          <span>وبسایت</span>
-                          <PublicIcon />
+                          {
+                            router.locale === "en" ? (
+                              <>
+                                <PublicIcon />
+                                <span>Website</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>وبسایت</span>
+                                <PublicIcon />
+                              </>
+                            )
+                          }                              
                         </Box>
                       </MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={8}>
+                <Grid item xs={12} sm={8}>
                   <TextField
                     fullWidth
-                    id="link"
-                    name="link"
-                    label="لینک"
-                    sx={{ input: { textAlign: "right" } }}
-                    value={formik.values.link}
+                    id="itemLink"
+                    name="itemLink"
+                    label={t('LINK_TEXT')}
+                    sx={{ input: { textAlign: `${router.locale === "en" ? "left" : "right"}` } }}
+                    value={formik.values.itemLink}
                     onChange={formik.handleChange}
-                    error={formik.touched.link && Boolean(formik.errors.link)}
-                    helperText={formik.touched.link && formik.errors.link}
+                    error={formik.touched.itemLink && Boolean(formik.errors.itemLink)}
+                    helperText={formik.touched.itemLink && handleHelperTranslation(formik.errors.itemLink)}
                   />
                 </Grid>
               </Grid>
@@ -280,6 +425,7 @@ export default function ItemsComponent({
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "flex-end",
+                gap: 1
               }}
             >
               <Button
@@ -288,23 +434,33 @@ export default function ItemsComponent({
                 variant="outlined"
                 onClick={() => {
                   formik.resetForm();
-                  handleCloseAddForm();
+                  handleCloseEditForm();
                 }}
               >
-                انصراف
+                {t('CANCEL')}
               </Button>
               <Button
                 size="small"
                 variant="contained"
                 type="submit"
-                disabled={link === formik.values.link && type === typeText}
+                disabled={formik.values.itemLink.length === 0}
               >
-                ویرایش مسیر ارتباطی {typeText}
+                {t('SUBMIT')}
+                {" "}
+                {router.locale === "en" ? handleTypeTranslation(itemType) : itemType}
               </Button>
             </CardActions>
           </form>
         </Card>
-      </Collapse>
+      </Collapse>      
     </Paper>
   );
+}
+
+export function getStaticProps({ locale }) {
+  return {
+    props: {
+      messages: require(`../i18n/${locale}.json`),
+    },
+  };
 }

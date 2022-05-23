@@ -1,0 +1,16 @@
+{
+	"General": {
+		"SEARCH_SOCIALS": "Search Socials",
+		"SEARCH_PLACEHOLDER": "Search...",
+		"MODAL_TITLE": "Are you sure?",
+		"CANCEL": "Cancel",
+		"DELETE": "Delete",
+		"SUBMIT": "Submit Social",
+		"EDIT": "Edit",
+		"SOCIALS": "SOCIALS",
+		"ADD_SOCIAL": "ADD SOCIAL",
+		"LINK_TEXT": "Link",
+		"TYPE_TEXT": "Type",
+		"ADD_SOCIAL_TYPE": "Add Social"
+	}
+}

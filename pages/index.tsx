@@ -26,6 +26,8 @@ import { ThemeProvider } from "@mui/material/styles";
 import { Toaster } from "react-hot-toast";
 import {lightTheme, darkTheme} from '../themes';
 import ContrastIcon from '@mui/icons-material/Contrast';
+import { useTranslations } from 'next-intl';
+import {useRouter} from 'next/router';
 
 const cacheRtl = createCache({
   key: "muirtl",
@@ -35,17 +37,20 @@ const cacheRtl = createCache({
 export const ThemeContext = createContext();
 
 export default function Home() {
+  const t = useTranslations('General');
+  const router = useRouter();
+
   const [allItems, setAllItems] = useState(null);
   const [sampleItems, setSampleItems] = useState(null);
-  const [itemTypeText, setItemTypeText] = useState(null);
+  const [itemType, setItemType] = useState(null);
   const [search, setSearch] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
-  const handleModalOpen = () => setOpenModal(true);
-  const handleModalClose = () => setOpenModal(false);
+  const handleModalOpen = (): void => setOpenModal(true);
+  const handleModalClose = (): void => setOpenModal(false);
 
-  const refetchData = () => {
+  const refetchData = (): void => {
     (async () => {
       try {
         const { data, status } = await getItems();
@@ -58,7 +63,7 @@ export default function Home() {
           setSampleItems(null);
         }
       } catch {
-        toastFire("error", "خطای درخواست");
+        toastFire("error", `${router.locale === "en" ? "Request Error" : "خطای درخواست"}`);
       }
     })();
   };
@@ -67,27 +72,27 @@ export default function Home() {
     refetchData();
   }, []);
 
-  const getItemType = (itemType) => {
-    setItemTypeText(itemType);
+  const handleGetItemType = (itemType: string): void => {
+    setItemType(itemType);
     handleModalOpen();
   };
 
-  const handleDeleteItem = async () => {
+  const handleDeleteItem = async (): void => {
     handleModalClose();
 
     try {
-      const { data, status } = await deleteItem(itemTypeText);
+      const { data, status } = await deleteItem(itemType);
 
       if (data.isSuccess === true && status === 200) {
-        toastFire("success", "حذف شد.");
+        toastFire("success", `${router.locale === "en" ? "Deleted" : "حذف شد."}`);
         refetchData();
       }
     } catch {
-      toastFire("error", "خطای درخواست");
+      toastFire("error", `${router.locale === "en" ? "Request Error" : "خطای درخواست"}`);
     }
   };
 
-  const getItemUpdateValues = async (obj) => {
+  const handleGetItemUpdateValues = async (obj: any): void => {
     try {
       const { data, status } = await updateItem(
         obj.type,
@@ -96,15 +101,15 @@ export default function Home() {
       );
 
       if (data.isSuccess === true && status === 200) {
-        toastFire("success", "آپدیت شد.");
+        toastFire("success", `${router.locale === "en" ? "Updated" : "آپدیت شد."}`);
         refetchData();
       }
     } catch {
-      toastFire("error", "خطای درخواست");
+      toastFire("error", `${router.locale === "en" ? "Request Error" : "خطای درخواست"}`);
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = (): void => {
     const items = [...allItems];
     const searchedItems = items.filter((i) => {
       if (i.type.includes(search) || i.link.includes(search)) return true;
@@ -113,16 +118,17 @@ export default function Home() {
     setSampleItems(searchedItems);
   };
 
-  const clearSearch = () => {
+  const handleClearSearch = (): void => {
     setSearch("");
     setSampleItems(allItems);
   };
 
+  {/*<CacheProvider value={router.locale === "fa" && cacheRtl}>*/}
+
   return (
-    <CacheProvider value={cacheRtl}>
       <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
         <div
-          dir="rtl"
+          dir={router.locale === "en" ? "ltr" : "rtl"}
           style={{
             backgroundColor: `${darkMode ? "#161B25" : "#FFF"}`,
             padding: "40px 0",
@@ -135,11 +141,11 @@ export default function Home() {
             <Paper
               elevation={darkMode ? 0 : 1}
               sx={{
-                width: 2 / 3,
-                mx: "auto",
-                p: 4,
+                width: {md: 2 / 3},
+                mx: {xs: 3, md: "auto"},
+                p: {xs: 2, sm: 4},
                 borderRadius: 4,
-                backgroundColor: `${!darkMode && "#FFF"}`
+                backgroundColor: `${darkMode ? "rgb(33, 43, 53)" : "#FFF"}`
               }}
             >
               <Box
@@ -151,13 +157,19 @@ export default function Home() {
                   gap: 2,
                 }}
               >
-                <Button variant="text">English</Button>
-                <Button variant="text">فارسی</Button>
-                <ContrastIcon sx={{cursor: "pointer"}} onClick={() => setDarkMode(prevState => !prevState)} />
+                <Button variant="text" onClick={router.locale === "fa" ? () => router.push('en') : () => {}} sx={router.locale === "fa" && {color: "rgb(121, 131, 142)"}}>English</Button>
+                <Button variant="text" onClick={router.locale === "en" ? () => router.push('fa') : () => {}} sx={router.locale === "en" && {color: "rgb(121, 131, 142)"}}>فارسی</Button>
+                <IconButton
+                  onClick={() => setDarkMode(prevState => !prevState)}
+                  sx={{ p: "10px" }}
+                  aria-label="theme"
+                >
+                  <ContrastIcon />
+                </IconButton>
               </Box>
 
               <Typography variant="overline" display="block">
-                جستجوی مسیر های ارتباطی
+                {t('SEARCH_SOCIALS')}
               </Typography>
               <Paper
                 elevation={0}
@@ -169,24 +181,27 @@ export default function Home() {
                 }}
               >
                 <InputBase
-                  sx={{ ml: 1, flex: 1 }}
-                  placeholder="جستجو..."
+                  sx={{ mx: 1, flex: 1 }}
+                  placeholder={t('SEARCH_PLACEHOLDER')}
                   inputProps={{ "aria-label": "جستجو" }}
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    if (e.target.value.toString().length === 0) {
+                      setSampleItems(allItems);
+                    }
+                  }}
                 />
                 <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
                 <IconButton
-                  type="submit"
                   sx={{ p: "10px" }}
-                  aria-label="search"
-                  onClick={clearSearch}
+                  aria-label="clear"
+                  onClick={handleClearSearch}
                   disabled={search.length === 0}
                 >
                   <ClearIcon />
                 </IconButton>
                 <IconButton
-                  type="submit"
                   sx={{ p: "10px" }}
                   aria-label="search"
                   onClick={handleSearch}
@@ -203,8 +218,8 @@ export default function Home() {
                 <Fragment key={index}>
                   <ItemsComponent
                     itemData={item}
-                    getItemType={getItemType}
-                    getItemUpdateValues={getItemUpdateValues}
+                    handleGetItemType={handleGetItemType}
+                    handleGetItemUpdateValues={handleGetItemUpdateValues}
                   />
                 </Fragment>
               ))}
@@ -233,9 +248,9 @@ export default function Home() {
                     id="modal-title"
                     variant="p"
                     component="h4"
-                    sx={{ textAlign: "left" }}
+                    sx={{ textAlign: `${router.locale === "en" ? "left" : "right"}` }}
                   >
-                    آیا از تصمیم خود مطمئن هستید؟
+                    {t('MODAL_TITLE')}
                   </Typography>
 
                   <Box
@@ -243,7 +258,7 @@ export default function Home() {
                       display: "flex",
                       flexDirection: "row",
                       alignItems: "center",
-                      justifyContent: "flex-start",
+                      justifyContent: `${router.locale === "en" ? "flex-end" : "flex-start"}`,
                       gap: 1,
                       mt: 4,
                     }}
@@ -252,15 +267,16 @@ export default function Home() {
                       variant="contained"
                       onClick={handleDeleteItem}
                       size="small"
+                      sx={router.locale === "en" && {order: 1}}
                     >
-                      حذف
+                      {t('DELETE')}
                     </Button>
                     <Button
                       variant="outlined"
                       onClick={handleModalClose}
                       size="small"
                     >
-                      انصراف
+                      {t('CANCEL')}
                     </Button>
                   </Box>
                 </Box>
@@ -269,6 +285,13 @@ export default function Home() {
           </ThemeContext.Provider>
         </div>
       </ThemeProvider>
-    </CacheProvider>
   );
+}
+
+export function getStaticProps({ locale }) {
+  return {
+    props: {
+      messages: require(`../i18n/${locale}.json`),
+    },
+  };
 }

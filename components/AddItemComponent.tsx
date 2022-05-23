@@ -1,33 +1,44 @@
 import { useState } from "react";
 import { Typography, Button, Box } from "@mui/material";
 import AddItemCollapseComponent from "./AddItemCollapseComponent";
+import { useTranslations } from 'next-intl';
 
 export default function AddItemComponent({ refetchData }) {
-  const [openAddForm, setOpenAddForm] = useState(false);
+  const t = useTranslations('General');
 
-  const handleOpenAddForm = () => setOpenAddForm((prevState) => !prevState);
-  const handleCloseAddForm = () => setOpenAddForm(false);
+  const [openPostForm, setOpenPostForm] = useState(false);
+
+  const handleOpenPostForm = (): void => setOpenPostForm((prevState) => !prevState);
+  const handleClosePostForm = (): void => setOpenPostForm(false);
 
   return (
     <Box>
       <Typography variant="overline" display="block">
-        مسیر های ارتباطی
+        {t('SOCIALS')}
       </Typography>
 
       <Button
-        disabled={openAddForm}
+        disabled={openPostForm}
         variant="text"
         sx={{ my: 2 }}
-        onClick={handleOpenAddForm}
+        onClick={handleOpenPostForm}
       >
-        افزودن مسیر ارتباطی
+        {t('ADD_SOCIAL')}
       </Button>
 
       <AddItemCollapseComponent
-        openAddForm={openAddForm}
-        handleCloseAddForm={handleCloseAddForm}
+        openPostForm={openPostForm}
+        handleClosePostForm={handleClosePostForm}
         refetchData={refetchData}
       />
     </Box>
   );
+}
+
+export function getStaticProps({ locale }) {
+  return {
+    props: {
+      messages: require(`../i18n/${locale}.json`),
+    },
+  };
 }

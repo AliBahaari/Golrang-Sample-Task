@@ -1,0 +1,16 @@
+{
+	"General": {
+		"SEARCH_SOCIALS": "جستجوی مسیر های ارتباطی",
+		"SEARCH_PLACEHOLDER": "جستجو...",
+		"MODAL_TITLE": "آیا مطمئن هستید؟",
+		"CANCEL": "انصراف",
+		"DELETE": "حذف",
+		"SUBMIT": "ثبت مسیر ارتباطی",
+		"EDIT": "ویرایش",
+		"SOCIALS": "مسیر های ارتباطی",
+		"ADD_SOCIAL": "افزودن مسیر ارتباطی",
+		"LINK_TEXT": "لینک",
+		"TYPE_TEXT": "نوع",
+		"ADD_SOCIAL_TYPE": "افزودن مسیر ارتباطی"
+	}
+}

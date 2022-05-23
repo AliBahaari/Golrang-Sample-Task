@@ -1,6 +1,6 @@
 import toast from "react-hot-toast";
 
-export const toastFire = (type: "success" | "error", text: string) => {
+export const toastFire = (type: "success" | "error", text: string): void => {
   if (type === "success") {
     toast.success(text, {
       duration: 4000,
