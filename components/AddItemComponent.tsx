@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { Typography, Button, Box } from "@mui/material";
 import AddItemCollapseComponent from "./AddItemCollapseComponent";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 
 export default function AddItemComponent({ refetchData }) {
-  const t = useTranslations('General');
+  const t = useTranslations("General");
 
   const [openPostForm, setOpenPostForm] = useState(false);
 
-  const handleOpenPostForm = (): void => setOpenPostForm((prevState) => !prevState);
+  const handleOpenPostForm = (): void =>
+    setOpenPostForm((prevState) => !prevState);
   const handleClosePostForm = (): void => setOpenPostForm(false);
 
   return (
     <Box>
       <Typography variant="overline" display="block">
-        {t('SOCIALS')}
+        {t("SOCIALS")}
       </Typography>
 
       <Button
@@ -23,7 +24,7 @@ export default function AddItemComponent({ refetchData }) {
         sx={{ my: 2 }}
         onClick={handleOpenPostForm}
       >
-        {t('ADD_SOCIAL')}
+        {t("ADD_SOCIAL")}
       </Button>
 
       <AddItemCollapseComponent

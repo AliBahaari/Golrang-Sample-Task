@@ -1,5 +1,5 @@
 import "../styles/globals.css";
-import {NextIntlProvider} from 'next-intl';
+import { NextIntlProvider } from "next-intl";
 
 function MyApp({ Component, pageProps }) {
   return (

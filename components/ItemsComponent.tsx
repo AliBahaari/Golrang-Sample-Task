@@ -30,8 +30,12 @@ import PublicIcon from "@mui/icons-material/Public";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { ThemeContext } from "../pages";
-import { useTranslations } from 'next-intl';
-import {useRouter} from 'next/router';
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/router";
+import rtlPlugin from "stylis-plugin-rtl";
+import { CacheProvider } from "@emotion/react";
+import createCache from "@emotion/cache";
+import { prefixer } from "stylis";
 
 const validationSchema = Yup.object().shape({
   itemLink: Yup.string()
@@ -42,12 +46,17 @@ const validationSchema = Yup.object().shape({
     .required("لینک اجباری است."),
 });
 
+const cacheRtl = createCache({
+  key: "muirtl",
+  stylisPlugins: [prefixer, rtlPlugin],
+});
+
 export default function ItemsComponent({
   itemData,
   handleGetItemType,
   handleGetItemUpdateValues,
 }) {
-  const t = useTranslations('General');
+  const t = useTranslations("General");
   const router = useRouter();
 
   const darkMode = useContext(ThemeContext);
@@ -57,7 +66,8 @@ export default function ItemsComponent({
   const [itemType, setItemType] = useState(type as string);
   const [openEditForm, setOpenEditForm] = useState(false);
 
-  const handleOpenEditForm = (): void => setOpenEditForm((prevState) => !prevState);
+  const handleOpenEditForm = (): void =>
+    setOpenEditForm((prevState) => !prevState);
   const handleCloseEditForm = (): void => setOpenEditForm(false);
 
   const formik = useFormik({
@@ -106,7 +116,7 @@ export default function ItemsComponent({
       case "وبسایت":
         return "Website";
     }
-  };  
+  };
 
   const handleHelperTranslation = (text): string => {
     switch (text) {
@@ -115,7 +125,7 @@ export default function ItemsComponent({
       case "لینک اجباری است.":
         return "The URL address is required.";
     }
-  }  
+  };
 
   return (
     <Paper
@@ -142,7 +152,7 @@ export default function ItemsComponent({
           sx={{
             display: "flex",
             alignItems: "center",
-            flexDirection: {xs: "column", sm: "row"},
+            flexDirection: { xs: "column", sm: "row" },
             gap: 1,
           }}
         >
@@ -170,7 +180,7 @@ export default function ItemsComponent({
             }}
           >
             <Typography variant="caption" display="inline-block">
-              {t('LINK_TEXT')}
+              {t("LINK_TEXT")}
               {":"}
             </Typography>
             <Link href={link} target="blank">
@@ -184,49 +194,78 @@ export default function ItemsComponent({
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            flexDirection: {xs: "column", sm: "row"},
+            flexDirection: { xs: "column", sm: "row" },
             gap: 1,
           }}
         >
           <IconButton
             color="primary"
             onClick={handleOpenEditForm}
-            sx={{ p: "10px", display: {sm: "none"} }}
+            sx={{ p: "10px", display: { sm: "none" } }}
             aria-label="edit"
           >
             <EditIcon />
-          </IconButton> 
+          </IconButton>
           <IconButton
             color="error"
             onClick={() => handleGetItemType(type)}
-            sx={{ p: "10px", display: {sm: "none"} }}
+            sx={{ p: "10px", display: { sm: "none" } }}
             aria-label="delete"
           >
             <DeleteIcon />
-          </IconButton>           
+          </IconButton>
 
-          <Button
-            disabled={openEditForm}
-            variant="text"
-            onClick={handleOpenEditForm}
-            startIcon={<EditIcon />}
-            sx={{
-              display: {xs: "none", sm: "flex"}
-            }}
-          >
-            {t('EDIT')}
-          </Button>
-          <Button
-            variant="text"
-            onClick={() => handleGetItemType(type)}
-            color="error"
-            startIcon={<DeleteIcon />}
-            sx={{
-              display: {xs: "none", sm: "flex"}
-            }}            
-          >
-            {t('DELETE')}
-          </Button>
+          {router.locale === "fa" ? (
+            <CacheProvider value={cacheRtl}>
+              <Button
+                disabled={openEditForm}
+                variant="text"
+                onClick={handleOpenEditForm}
+                startIcon={<EditIcon />}
+                sx={{
+                  display: { xs: "none", sm: "flex" },
+                }}
+              >
+                {t("EDIT")}
+              </Button>
+              <Button
+                variant="text"
+                onClick={() => handleGetItemType(type)}
+                color="error"
+                startIcon={<DeleteIcon />}
+                sx={{
+                  display: { xs: "none", sm: "flex" },
+                }}
+              >
+                {t("DELETE")}
+              </Button>
+            </CacheProvider>
+          ) : (
+            <>
+              <Button
+                disabled={openEditForm}
+                variant="text"
+                onClick={handleOpenEditForm}
+                startIcon={<EditIcon />}
+                sx={{
+                  display: { xs: "none", sm: "flex" },
+                }}
+              >
+                {t("EDIT")}
+              </Button>
+              <Button
+                variant="text"
+                onClick={() => handleGetItemType(type)}
+                color="error"
+                startIcon={<DeleteIcon />}
+                sx={{
+                  display: { xs: "none", sm: "flex" },
+                }}
+              >
+                {t("DELETE")}
+              </Button>
+            </>
+          )}
         </Box>
       </Box>
 
@@ -236,6 +275,7 @@ export default function ItemsComponent({
         <Card
           sx={{
             p: 2,
+            mt: 2,
             borderRadius: 4,
             backgroundColor: `${darkMode && "rgb(52, 61, 72)"}`,
             backgroundImage: `${
@@ -248,175 +288,306 @@ export default function ItemsComponent({
           <form onSubmit={formik.handleSubmit}>
             <CardContent>
               <Typography variant="body2" display="block" sx={{ mb: 2 }}>
-                {t('ADD_SOCIAL_TYPE')}
-                {" "}
-                {router.locale === "en" ? handleTypeTranslation(itemType) : itemType}
+                {t("ADD_SOCIAL_TYPE")}{" "}
+                {router.locale === "en"
+                  ? handleTypeTranslation(itemType)
+                  : itemType}
               </Typography>
 
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth>
-                    <InputLabel id="item-type-select-label">
-                      {t('TYPE_TEXT')}
-                    </InputLabel>
-                    <Select
-                      labelId="item-type-select-label"
-                      id="item-type-select"
-                      value={itemType}
-                      sx={{ display: "flex", flexDirection: "row" }}
-                      label="نوع"
-                      onChange={(event: SelectChangeEvent) =>
-                        setItemType(event.target.value as string)
-                      }
-                    >
-                      <MenuItem
-                        value={"توییتر"}
-                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
-                      >
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                        >
-                          {
-                            router.locale === "en" ? (
-                              <>
-                                <TwitterIcon />
-                                <span>Twitter</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>توییتر</span>
-                                <TwitterIcon />
-                              </>
-                            )
+                  {router.locale === "fa" ? (
+                    <CacheProvider value={cacheRtl}>
+                      <FormControl fullWidth>
+                        <InputLabel id="item-type-select-label">
+                          {t("TYPE_TEXT")}
+                        </InputLabel>
+                        <Select
+                          labelId="item-type-select-label"
+                          id="item-type-select"
+                          value={itemType}
+                          sx={{ display: "flex", flexDirection: "row" }}
+                          label="نوع"
+                          onChange={(event: SelectChangeEvent) =>
+                            setItemType(event.target.value as string)
                           }
-                        </Box>
-                      </MenuItem>
+                        >
+                          <MenuItem
+                            value={"توییتر"}
+                            sx={{
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <span>توییتر</span>
+                              <TwitterIcon />
+                            </Box>
+                          </MenuItem>
 
-                      <MenuItem
-                        value={"اینستاگرام"}
-                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
+                          <MenuItem
+                            value={"اینستاگرام"}
+                            sx={{
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <span>اینستاگرام</span>
+                              <InstagramIcon />
+                            </Box>
+                          </MenuItem>
+                          <MenuItem
+                            value={"فیسبوک"}
+                            sx={{
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <span>فیسبوک</span>
+                              <FacebookIcon />
+                            </Box>
+                          </MenuItem>
+                          <MenuItem
+                            value={"تلگرام"}
+                            sx={{
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <span>تلگرام</span>
+                              <TelegramIcon />
+                            </Box>
+                          </MenuItem>
+                          <MenuItem
+                            value={"لینکدین"}
+                            sx={{
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <span>لینکدین</span>
+                              <LinkedInIcon />
+                            </Box>
+                          </MenuItem>
+                          <MenuItem
+                            value={"وبسایت"}
+                            sx={{
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
+                              <span>وبسایت</span>
+                              <PublicIcon />
+                            </Box>
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                    </CacheProvider>
+                  ) : (
+                    <FormControl fullWidth>
+                      <InputLabel id="item-type-select-label">
+                        {t("TYPE_TEXT")}
+                      </InputLabel>
+                      <Select
+                        labelId="item-type-select-label"
+                        id="item-type-select"
+                        value={itemType}
+                        sx={{ display: "flex", flexDirection: "row" }}
+                        label="نوع"
+                        onChange={(event: SelectChangeEvent) =>
+                          setItemType(event.target.value as string)
+                        }
                       >
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        <MenuItem
+                          value={"توییتر"}
+                          sx={{
+                            justifyContent: "flex-start",
+                          }}
                         >
-                          {
-                            router.locale === "en" ? (
-                              <>
-                                <InstagramIcon />
-                                <span>Instagram</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>اینستاگرام</span>
-                                <InstagramIcon />
-                              </>
-                            )
-                          }                        
-                        </Box>
-                      </MenuItem>
-                      <MenuItem
-                        value={"فیسبوک"}
-                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
-                      >
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
+                            <TwitterIcon />
+                            <span>Twitter</span>
+                          </Box>
+                        </MenuItem>
+
+                        <MenuItem
+                          value={"اینستاگرام"}
+                          sx={{
+                            justifyContent: "flex-start",
+                          }}
                         >
-                          {
-                            router.locale === "en" ? (
-                              <>
-                                <FacebookIcon />
-                                <span>Facebook</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>فیسبوک</span>
-                                <FacebookIcon />
-                              </>
-                            )
-                          }                            
-                        </Box>
-                      </MenuItem>
-                      <MenuItem
-                        value={"تلگرام"}
-                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
-                      >
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
+                            <InstagramIcon />
+                            <span>Instagram</span>
+                          </Box>
+                        </MenuItem>
+                        <MenuItem
+                          value={"فیسبوک"}
+                          sx={{
+                            justifyContent: "flex-start",
+                          }}
                         >
-                          {
-                            router.locale === "en" ? (
-                              <>
-                                <TelegramIcon />
-                                <span>Telegram</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>تلگرام</span>
-                                <TelegramIcon />
-                              </>
-                            )
-                          }                            
-                        </Box>
-                      </MenuItem>
-                      <MenuItem
-                        value={"لینکدین"}
-                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
-                      >
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
+                            <FacebookIcon />
+                            <span>Facebook</span>
+                          </Box>
+                        </MenuItem>
+                        <MenuItem
+                          value={"تلگرام"}
+                          sx={{
+                            justifyContent: "flex-start",
+                          }}
                         >
-                          {
-                            router.locale === "en" ? (
-                              <>
-                                <LinkedInIcon />
-                                <span>LinkedIn</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>لینکدین</span>
-                                <LinkedInIcon />
-                              </>
-                            )
-                          }                            
-                        </Box>
-                      </MenuItem>
-                      <MenuItem
-                        value={"وبسایت"}
-                        sx={{ justifyContent: `${router.locale === "en" ? "flex-start" : "flex-end"}` }}
-                      >
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
+                            <TelegramIcon />
+                            <span>Telegram</span>
+                          </Box>
+                        </MenuItem>
+                        <MenuItem
+                          value={"لینکدین"}
+                          sx={{
+                            justifyContent: "flex-start",
+                          }}
                         >
-                          {
-                            router.locale === "en" ? (
-                              <>
-                                <PublicIcon />
-                                <span>Website</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>وبسایت</span>
-                                <PublicIcon />
-                              </>
-                            )
-                          }                              
-                        </Box>
-                      </MenuItem>
-                    </Select>
-                  </FormControl>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
+                            <LinkedInIcon />
+                            <span>LinkedIn</span>
+                          </Box>
+                        </MenuItem>
+                        <MenuItem
+                          value={"وبسایت"}
+                          sx={{
+                            justifyContent: "flex-start",
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
+                            <PublicIcon />
+                            <span>Website</span>
+                          </Box>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  )}
                 </Grid>
                 <Grid item xs={12} sm={8}>
-                  <TextField
-                    fullWidth
-                    id="itemLink"
-                    name="itemLink"
-                    label={t('LINK_TEXT')}
-                    sx={{ input: { textAlign: `${router.locale === "en" ? "left" : "right"}` } }}
-                    value={formik.values.itemLink}
-                    onChange={formik.handleChange}
-                    error={formik.touched.itemLink && Boolean(formik.errors.itemLink)}
-                    helperText={formik.touched.itemLink && handleHelperTranslation(formik.errors.itemLink)}
-                  />
+                  {router.locale === "fa" ? (
+                    <CacheProvider value={cacheRtl}>
+                      <TextField
+                        fullWidth
+                        id="itemLink"
+                        name="itemLink"
+                        label={t("LINK_TEXT")}
+                        sx={{
+                          input: {
+                            textAlign: "right",
+                          },
+                        }}
+                        value={formik.values.itemLink}
+                        onChange={formik.handleChange}
+                        error={
+                          formik.touched.itemLink &&
+                          Boolean(formik.errors.itemLink)
+                        }
+                        helperText={
+                          formik.touched.itemLink &&
+                          handleHelperTranslation(formik.errors.itemLink)
+                        }
+                      />
+                    </CacheProvider>
+                  ) : (
+                    <TextField
+                      fullWidth
+                      id="itemLink"
+                      name="itemLink"
+                      label={t("LINK_TEXT")}
+                      sx={{
+                        input: {
+                          textAlign: "left",
+                        },
+                      }}
+                      value={formik.values.itemLink}
+                      onChange={formik.handleChange}
+                      error={
+                        formik.touched.itemLink &&
+                        Boolean(formik.errors.itemLink)
+                      }
+                      helperText={
+                        formik.touched.itemLink &&
+                        handleHelperTranslation(formik.errors.itemLink)
+                      }
+                    />
+                  )}
                 </Grid>
               </Grid>
             </CardContent>
@@ -425,7 +596,7 @@ export default function ItemsComponent({
                 display: "flex",
                 flexDirection: "row",
                 justifyContent: "flex-end",
-                gap: 1
+                gap: 1,
               }}
             >
               <Button
@@ -437,22 +608,23 @@ export default function ItemsComponent({
                   handleCloseEditForm();
                 }}
               >
-                {t('CANCEL')}
+                {t("CANCEL")}
               </Button>
               <Button
                 size="small"
                 variant="contained"
                 type="submit"
-                disabled={formik.values.itemLink.length === 0}
+                disabled={formik.values.itemLink.length === 0 || itemType === type && formik.values.itemLink === link }
               >
-                {t('SUBMIT')}
-                {" "}
-                {router.locale === "en" ? handleTypeTranslation(itemType) : itemType}
+                {t("SUBMIT")}{" "}
+                {router.locale === "en"
+                  ? handleTypeTranslation(itemType)
+                  : itemType}
               </Button>
             </CardActions>
           </form>
         </Card>
-      </Collapse>      
+      </Collapse>
     </Paper>
   );
 }

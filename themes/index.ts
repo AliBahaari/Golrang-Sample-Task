@@ -16,7 +16,7 @@ export const lightTheme = createTheme({
   },
   typography: {
     fontFamily: "Vazirmatn FD",
-  }
+  },
 });
 
 export const darkTheme = createTheme({
@@ -71,5 +71,5 @@ export const darkTheme = createTheme({
   },
   typography: {
     fontFamily: "Vazirmatn FD",
-  }
+  },
 });
