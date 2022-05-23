@@ -24,6 +24,7 @@ import { lightTheme, darkTheme } from "../themes";
 import ContrastIcon from "@mui/icons-material/Contrast";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/router";
+import Head from 'next/head'
 
 export const ThemeContext = createContext();
 
@@ -139,6 +140,11 @@ export default function Home() {
           minHeight: "100vh",
         }}
       >
+        <Head>
+          <title>Golrang Sample | Ali Bahaari</title>
+          <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        </Head>
+
         <ThemeContext.Provider value={darkMode}>
           <Toaster />
 
